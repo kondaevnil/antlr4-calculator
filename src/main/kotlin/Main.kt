@@ -13,6 +13,10 @@ fun main(args: Array<String>) {
     val tree: ParseTree = parser.parse()
 
     val calcVisitor = CalculatorBaseVisitor()
-    val result: Double = calcVisitor.visit(tree)
-    println("Result: $result")
+    val result: List<Double> = calcVisitor.visit(tree)
+
+    input.toString()
+        .split(";")
+        .dropLast(1)
+        .forEachIndexed { i, s -> print("$s = ${result[i]}") }
 }

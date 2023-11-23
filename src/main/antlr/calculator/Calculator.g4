@@ -1,6 +1,9 @@
 grammar Calculator;
 
-parse : (assignment | expression) ';' ;
+parse : (statement ';')+ ;
+
+statement : assignment
+          | expression ;
 
 expression : '(' expression ')'
            | expression op=(MUL | DIV) expression

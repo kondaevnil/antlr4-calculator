@@ -1,4 +1,5 @@
 import CalculatorParser.AssignmentContext
+import CalculatorParser.StatementContext
 import org.antlr.v4.runtime.tree.ParseTreeVisitor
 
 /**
@@ -15,6 +16,13 @@ interface CalculatorVisitor<T> : ParseTreeVisitor<T> {
      * @return the visitor result
      */
     fun visitParse(ctx: CalculatorParser.ParseContext?): T
+
+    /**
+     * Visit a parse tree produced by [CalculatorParser.statement].
+     * @param ctx the parse tree
+     * @return the visitor result
+     */
+    fun visitStatement(ctx: StatementContext?): T
 
     /**
      * Visit a parse tree produced by [CalculatorParser.expression].
