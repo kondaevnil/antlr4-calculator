@@ -18,5 +18,5 @@ fun main(args: Array<String>) {
     input.toString()
         .split(";")
         .dropLast(1)
-        .forEachIndexed { i, s -> print("$s = ${result[i]}") }
+        .forEachIndexed { i, s -> print("$s = ${result[i]};") }
 }

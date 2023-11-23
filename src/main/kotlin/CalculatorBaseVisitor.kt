@@ -1,24 +1,69 @@
 import CalculatorParser.AssignmentContext
+import CalculatorParser.StatementContext
 import org.antlr.v4.runtime.tree.AbstractParseTreeVisitor
 
-/**
- * This class provides an empty implementation of [CalculatorVisitor],
- * which can be extended to create a visitor which only needs to handle a subset
- * of the available methods.
- *
- * @param <T> The return type of the visit operation. Use [Void] for
- * operations with no return type.
-</T> */
-class CalculatorBaseVisitor : AbstractParseTreeVisitor<Double>(), CalculatorVisitor<Double> {
-    override fun visitParse(ctx: CalculatorParser.ParseContext?): Double {
-        TODO("Not yet implemented")
+class CalculatorBaseVisitor : AbstractParseTreeVisitor<MutableList<Double>>(), CalculatorVisitor<MutableList<Double>> {
+    private val variables: HashMap<String, Double> = hashMapOf()
+
+    override fun visitParse(ctx: CalculatorParser.ParseContext?): MutableList<Double> {
+        if (ctx == null) {
+            return mutableListOf(0.0)
+        }
+
+        return ctx.statement()
+            .map { stm -> visitStatement(stm) }
+            .map { lst -> lst[0] }
+            .toMutableList()
     }
 
-    override fun visitExpression(ctx: CalculatorParser.ExpressionContext?): Double {
-        TODO("Not yet implemented")
+    override fun visitStatement(ctx: StatementContext?): MutableList<Double> {
+        if (ctx == null) {
+            return mutableListOf(0.0)
+        }
+
+        if (ctx.assignment() != null) {
+            return visitAssignment(ctx.assignment())
+        } else if (ctx.expression() != null) {
+            return visitExpression(ctx.expression())
+        }
+
+        return mutableListOf(0.0)
     }
 
-    override fun visitAssignment(ctx: AssignmentContext?): Double {
-        TODO("Not yet implemented")
+    override fun visitExpression(ctx: CalculatorParser.ExpressionContext?): MutableList<Double> {
+        if (ctx?.ID() != null) {
+            val variableName = ctx.ID().text
+            if (variables.containsKey(variableName)) {
+                return mutableListOf(variables[variableName]!!)
+            } else {
+                throw RuntimeException("Variable $variableName is not defined")
+            }
+        } else if (ctx?.INT() != null) {
+            return mutableListOf(ctx.INT().text.toDouble())
+        } else if (ctx?.expression()?.size == 2) {
+            val left = visitExpression(ctx.expression(0))[0]
+            val right = visitExpression(ctx.expression(1))[0]
+            return when (ctx.op.type) {
+                CalculatorParser.ADD -> mutableListOf(left + right)
+                CalculatorParser.SUB -> mutableListOf(left - right)
+                CalculatorParser.MUL -> mutableListOf(left * right)
+                CalculatorParser.DIV -> mutableListOf(left / right)
+                else -> throw RuntimeException("Invalid operator")
+            }
+        } else {
+            throw RuntimeException("Invalid expression")
+        }
+
+    }
+
+    override fun visitAssignment(ctx: AssignmentContext?): MutableList<Double> {
+        val varName = ctx?.ID()?.text
+        val expressionResult = visitExpression(ctx?.expression())
+
+        if (varName != null) {
+            variables[varName] = expressionResult[0]
+        }
+        return expressionResult
+
     }
 }
